@@ -26,15 +26,21 @@ import {
     D3MInstance,
     D3MCommonConfig,
     D3MAavePoolConfig,
+    D3MAaveUSDSPoolConfig,
     D3MCompoundPoolConfig,
     D3MAaveRateTargetPlanConfig,
     D3MCompoundRateTargetPlanConfig,
     D3MAavePoolLike,
+    D3MAaveUSDSPoolLike,
     D3MAaveRateTargetPlanLike,
     D3MAaveBufferPlanLike,
     D3MAaveBufferPlanConfig,
     D3MCompoundPoolLike,
     D3MCompoundRateTargetPlanLike,
+    D3M4626PoolLike,
+    D3M4626PoolConfig,
+    D3MOperatorPlanLike,
+    D3MOperatorPlanConfig,
     CDaiLike
 } from "../src/deploy/D3MInit.sol";
 
@@ -106,6 +112,21 @@ contract D3MInitScript is Script {
                 cfg,
                 aaveCfg
             );
+        } else if (poolType.eq("aave-v3-usds-no-supply-cap")) {
+            D3MAaveUSDSPoolConfig memory aaveCfg = D3MAaveUSDSPoolConfig({
+                king: config.readAddress(".king"),
+                ausds: D3MAaveUSDSPoolLike(d3m.pool).ausds(),
+                usdsJoin: D3MAaveUSDSPoolLike(d3m.pool).usdsJoin(),
+                usds: D3MAaveUSDSPoolLike(d3m.pool).usds(),
+                stableDebt: D3MAaveUSDSPoolLike(d3m.pool).stableDebt(),
+                variableDebt: D3MAaveUSDSPoolLike(d3m.pool).variableDebt()
+            });
+            D3MInit.initAaveUSDSPool(
+                dss,
+                d3m,
+                cfg,
+                aaveCfg
+            );
         } else if (poolType.eq("compound-v2")) {
             D3MCompoundPoolConfig memory compoundCfg = D3MCompoundPoolConfig({
                 king: config.readAddress(".king"),
@@ -118,6 +139,16 @@ contract D3MInitScript is Script {
                 d3m,
                 cfg,
                 compoundCfg
+            );
+        } else if (poolType.eq("erc4626")) {
+            D3M4626PoolConfig memory erc4626Cfg = D3M4626PoolConfig({
+                vault: D3M4626PoolLike(d3m.pool).vault()
+            });
+            D3MInit.init4626Pool(
+                dss,
+                d3m,
+                cfg,
+                erc4626Cfg
             );
         } else {
             revert("Unknown pool type");
@@ -165,6 +196,14 @@ contract D3MInitScript is Script {
             } else {
                 revert("Invalid pool type for liquidity buffer plan type");
             }
+        } else if (planType.eq("operator")) {
+            D3MOperatorPlanConfig memory operatorCfg = D3MOperatorPlanConfig({
+                operator: config.readAddress(".operator")
+            });
+            D3MInit.initOperatorPlan(
+                d3m,
+                operatorCfg
+            );
         } else {
             revert("Unknown plan type");
         }

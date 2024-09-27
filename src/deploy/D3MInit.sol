@@ -37,6 +37,20 @@ interface D3MAavePoolLike {
     function variableDebt() external view returns (address);
 }
 
+interface D3MAaveUSDSPoolLike {
+    function hub() external view returns (address);
+    function dai() external view returns (address);
+    function ilk() external view returns (bytes32);
+    function vat() external view returns (address);
+    function file(bytes32, address) external;
+    function ausds() external view returns (address);
+    function usdsJoin() external view returns (address);
+    function usds() external view returns (address);
+    function daiJoin() external view returns (address);
+    function stableDebt() external view returns (address);
+    function variableDebt() external view returns (address);
+}
+
 interface D3MAaveRateTargetPlanLike {
     function rely(address) external;
     function file(bytes32, uint256) external;
@@ -80,6 +94,18 @@ interface CDaiLike {
     function implementation() external view returns (address);
 }
 
+interface D3M4626PoolLike {
+    function hub() external view returns (address);
+    function dai() external view returns (address);
+    function ilk() external view returns (bytes32);
+    function vat() external view returns (address);
+    function vault() external view returns (address);
+}
+
+interface D3MOperatorPlanLike {
+    function file(bytes32, address) external;
+}
+
 interface D3MOracleLike {
     function vat() external view returns (address);
     function ilk() external view returns (bytes32);
@@ -120,6 +146,15 @@ struct D3MAavePoolConfig {
     address variableDebt;
 }
 
+struct D3MAaveUSDSPoolConfig {
+    address king;
+    address ausds;
+    address usdsJoin;
+    address usds;
+    address stableDebt;
+    address variableDebt;
+}
+
 struct D3MAaveRateTargetPlanConfig {
     uint256 bar;
     address adai;
@@ -146,6 +181,14 @@ struct D3MCompoundRateTargetPlanConfig {
     address cdai;
     address tack;
     address delegate;
+}
+
+struct D3M4626PoolConfig {
+    address vault;
+}
+
+struct D3MOperatorPlanConfig {
+    address operator;
 }
 
 // Init a D3M instance
@@ -255,6 +298,29 @@ library D3MInit {
         pool.file("king", aaveCfg.king);
     }
 
+    function initAaveUSDSPool(
+        DssInstance memory dss,
+        D3MInstance memory d3m,
+        D3MCommonConfig memory cfg,
+        D3MAaveUSDSPoolConfig memory aaveCfg
+    ) internal {
+        D3MAaveUSDSPoolLike pool = D3MAaveUSDSPoolLike(d3m.pool);
+
+        // Sanity checks
+        require(pool.hub() == cfg.hub, "Pool hub mismatch");
+        require(pool.ilk() == cfg.ilk, "Pool ilk mismatch");
+        require(pool.vat() == address(dss.vat), "Pool vat mismatch");
+        require(pool.usdsJoin() == aaveCfg.usdsJoin, "Pool usdsJoin mismatch");
+        require(pool.usds() == aaveCfg.usds, "Pool usds mismatch");
+        require(pool.daiJoin() == address(dss.daiJoin), "Pool daiJoin mismatch");
+        require(pool.dai() == address(dss.dai), "Pool dai mismatch");
+        require(pool.ausds() == aaveCfg.ausds, "Pool ausds mismatch");
+        require(pool.stableDebt() == aaveCfg.stableDebt, "Pool stableDebt mismatch");
+        require(pool.variableDebt() == aaveCfg.variableDebt, "Pool variableDebt mismatch");
+
+        pool.file("king", aaveCfg.king);
+    }
+
     function initCompoundPool(
         DssInstance memory dss,
         D3MInstance memory d3m,
@@ -273,6 +339,25 @@ library D3MInit {
         require(pool.cDai() == compoundCfg.cdai, "Pool cDai mismatch");
 
         pool.file("king", compoundCfg.king);
+    }
+
+    /**
+     * @dev Initialize a 4626 pool.
+     */
+    function init4626Pool(
+        DssInstance memory dss,
+        D3MInstance memory d3m,
+        D3MCommonConfig memory cfg,
+        D3M4626PoolConfig memory erc4626Cfg
+    ) internal view {
+        D3M4626PoolLike pool = D3M4626PoolLike(d3m.pool);
+
+        // Sanity checks
+        require(pool.hub() == cfg.hub, "Pool hub mismatch");
+        require(pool.ilk() == cfg.ilk, "Pool ilk mismatch");
+        require(pool.vat() == address(dss.vat), "Pool vat mismatch");
+        require(pool.dai() == address(dss.dai), "Pool dai mismatch");
+        require(pool.vault() == erc4626Cfg.vault, "Pool vault mismatch");
     }
 
     function initAaveRateTargetPlan(
@@ -321,6 +406,15 @@ library D3MInit {
         require(plan.cDai() == address(cdai), "Plan cDai mismatch");
 
         plan.file("barb", compoundCfg.barb);
+    }
+
+    function initOperatorPlan(
+        D3MInstance memory d3m,
+        D3MOperatorPlanConfig memory operatorCfg
+    ) internal {
+        D3MOperatorPlanLike plan = D3MOperatorPlanLike(d3m.plan);
+
+        plan.file("operator", operatorCfg.operator);
     }
 
 }

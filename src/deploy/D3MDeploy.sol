@@ -28,8 +28,11 @@ import { D3MAaveV2TypeRateTargetPlan } from "../plans/D3MAaveV2TypeRateTargetPla
 import { D3MAaveTypeBufferPlan } from "../plans/D3MAaveTypeBufferPlan.sol";
 import { D3MAaveV2TypePool } from "../pools/D3MAaveV2TypePool.sol";
 import { D3MAaveV3NoSupplyCapTypePool } from "../pools/D3MAaveV3NoSupplyCapTypePool.sol";
+import { D3MAaveV3USDSNoSupplyCapTypePool } from "../pools/D3MAaveV3USDSNoSupplyCapTypePool.sol";
 import { D3MCompoundV2TypeRateTargetPlan } from "../plans/D3MCompoundV2TypeRateTargetPlan.sol";
 import { D3MCompoundV2TypePool } from "../pools/D3MCompoundV2TypePool.sol";
+import { D3M4626TypePool } from "../pools/D3M4626TypePool.sol";
+import { D3MOperatorPlan } from "../plans/D3MOperatorPlan.sol";
 import { D3MOracle } from "../D3MOracle.sol";
 
 // Deploy a D3M instance
@@ -84,6 +87,20 @@ library D3MDeploy {
         ScriptTools.switchOwner(pool, deployer, owner);
     }
 
+    function deployAaveV3USDSNoSupplyCapTypePool(
+        address deployer,
+        address owner,
+        bytes32 ilk,
+        address hub,
+        address usdsJoin,
+        address daiJoin,
+        address lendingPool
+    ) internal returns (address pool) {
+        pool = address(new D3MAaveV3USDSNoSupplyCapTypePool(ilk, hub, usdsJoin, daiJoin, lendingPool));
+
+        ScriptTools.switchOwner(pool, deployer, owner);
+    }
+
     function deployCompoundV2TypePool(
         address deployer,
         address owner,
@@ -92,6 +109,19 @@ library D3MDeploy {
         address cdai
     ) internal returns (address pool) {
         pool = address(new D3MCompoundV2TypePool(ilk, hub, cdai));
+
+        ScriptTools.switchOwner(pool, deployer, owner);
+    }
+
+    function deploy4626TypePool(
+        address deployer,
+        address owner,
+        bytes32 ilk,
+        address hub,
+        address dai,
+        address vault
+    ) internal returns (address pool) {
+        pool = address(new D3M4626TypePool(ilk, hub, dai, vault));
 
         ScriptTools.switchOwner(pool, deployer, owner);
     }
@@ -123,6 +153,15 @@ library D3MDeploy {
         address cdai
     ) internal returns (address plan) {
         plan = address(new D3MCompoundV2TypeRateTargetPlan(cdai));
+
+        ScriptTools.switchOwner(plan, deployer, owner);
+    }
+
+    function deployOperatorPlan(
+        address deployer,
+        address owner
+    ) internal returns (address plan) {
+        plan = address(new D3MOperatorPlan());
 
         ScriptTools.switchOwner(plan, deployer, owner);
     }

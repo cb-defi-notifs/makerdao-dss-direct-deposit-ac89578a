@@ -95,6 +95,16 @@ contract D3MDeployScript is Script {
                 address(dss.dai),
                 config.readAddress(".lendingPool")
             );
+        } else if (poolType.eq("aave-v3-usds-no-supply-cap")) {
+            d3m.pool = D3MDeploy.deployAaveV3USDSNoSupplyCapTypePool(
+                msg.sender,
+                admin,
+                ilk,
+                hub,
+                config.readAddress(".usdsJoin"),
+                address(dss.daiJoin),
+                config.readAddress(".lendingPool")
+            );
         } else if (poolType.eq("compound-v2")) {
             d3m.pool = D3MDeploy.deployCompoundV2TypePool(
                 msg.sender,
@@ -102,6 +112,15 @@ contract D3MDeployScript is Script {
                 ilk,
                 hub,
                 config.readAddress(".cdai")
+            );
+        } else if (poolType.eq("erc4626")) {
+            d3m.pool = D3MDeploy.deploy4626TypePool(
+                msg.sender,
+                admin,
+                ilk,
+                hub,
+                address(dss.dai),
+                config.readAddress(".vault")
             );
         } else {
             revert("Unknown pool type");
@@ -135,6 +154,11 @@ contract D3MDeployScript is Script {
             } else {
                 revert("Invalid pool type for liquidity buffer plan type");
             }
+        } else if (planType.eq("operator")) {
+            d3m.plan = D3MDeploy.deployOperatorPlan(
+                msg.sender,
+                admin
+            );
         } else {
             revert("Unknown plan type");
         }
